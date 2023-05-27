@@ -13,13 +13,18 @@ def extract_files():
 
     for file in files:
         for line in file:
-            primes.append(int(line))
+            try:
+                line = line.replace(r"\n", "")
+                primes.append(int(line))
+            except:
+                pass
 
-    return primes.sort()
+    primes.sort()
+    return primes
 
 
 class Dataset(Dataset):
-    def __init__(self, transforms):
+    def __init__(self, transforms = None):
         primes = extract_files()
 
         self.dataset = torch.zeros(len(primes))
@@ -31,10 +36,10 @@ class Dataset(Dataset):
     def __len__(self):
         return len(self.dataset)
 
-    def __getitem(self, ind):
+    def __getitem__(self, idx):
         if self.transforms != None:
-            return (ind+1, transforms(dataset[ind]))
-        return (ind+1, dataset[ind])
+            return (torch.tensor(idx+1), transforms(torch.tensor(self.dataset[idx])))
+        return (torch.tensor(idx+1), torch.tensor(self.dataset[idx]))
 
 dataset = Dataset()
 
@@ -42,15 +47,35 @@ batch_size = 10
 data_loader = DataLoader(dataset, batch_size = batch_size, shuffle = True)
 
 model = nn.Sequential(
-        nn.Linear(1, 10),
+        nn.Linear(4, 10),
         nn.LeakyReLU(),
 
         nn.Linear(10, 10),
         nn.LeakyReLU(),
 
-        nn.Linear(10, 1),
+        nn.Linear(10, 4),
         nn.LeakyReLU()
 )
 
 def eval(input, key):
-    
+    for i, In in enumerate(input):
+        eval = [1 if In == key[i] else 0]
+    return accs
+
+def fit(num_epochs):
+    losses, accs = [], []
+    opt = torch.optim.Adam(model.parameters(), lr = 0.002)
+    loss_fn = nn.BCELoss()
+
+    for epoch in range(num_epochs):
+        for i, (data, label) in enumerate(dataset):
+            output = model(data)
+            loss = loss_fn(output, label)
+
+            loss.backward()
+            opt.step()
+            opt.zero_grad()
+
+            losses.append(loss)
+        print("Epoch [{}/{}], Loss = {}".format(epoch+1, num_epochs, sum(losses)/len(losses)))
+fit(2)
