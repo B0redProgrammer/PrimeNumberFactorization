@@ -38,22 +38,33 @@ class Dataset(Dataset):
 
     def __getitem__(self, idx):
         if self.transforms != None:
-            return (torch.tensor(idx+1), transforms(torch.tensor(self.dataset[idx])))
-        return (torch.tensor(idx+1), torch.tensor(self.dataset[idx]))
+            return (torch.tensor(idx+1), transforms(self.dataset[idx]))
+        return (torch.tensor(int(idx+1)), self.dataset[idx])
 
 dataset = Dataset()
 
 batch_size = 10
 data_loader = DataLoader(dataset, batch_size = batch_size, shuffle = True)
 
+class newlayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        x = x.to(torch.float32)
+        return x
+
 model = nn.Sequential(
-        nn.Linear(4, 10),
+        newlayer(),
+        nn.Linear(1, 10),
         nn.LeakyReLU(),
 
+        newlayer(),
         nn.Linear(10, 10),
         nn.LeakyReLU(),
 
-        nn.Linear(10, 4),
+        newlayer(),
+        nn.Linear(10, 1),
         nn.LeakyReLU()
 )
 
@@ -65,10 +76,13 @@ def eval(input, key):
 def fit(num_epochs):
     losses, accs = [], []
     opt = torch.optim.Adam(model.parameters(), lr = 0.002)
-    loss_fn = nn.BCELoss()
+    loss_fn = nn.CrossEntropyLoss()
 
     for epoch in range(num_epochs):
         for i, (data, label) in enumerate(dataset):
+            data = data.reshape(1, 1)
+            label = label.reshape(1, 1)
+
             output = model(data)
             loss = loss_fn(output, label)
 
@@ -77,5 +91,8 @@ def fit(num_epochs):
             opt.zero_grad()
 
             losses.append(loss)
+
+            if i % 100000 == 0:
+                print("Current loss = {}".format(sum(losses)/len(losses)))
         print("Epoch [{}/{}], Loss = {}".format(epoch+1, num_epochs, sum(losses)/len(losses)))
 fit(2)
