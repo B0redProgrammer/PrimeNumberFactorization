@@ -70,13 +70,13 @@ model = nn.Sequential(
 
 def eval(input, key):
     for i, In in enumerate(input):
-        eval = [1 if In == key[i] else 0]
+        eval = []
     return accs
 
 def fit(num_epochs):
     losses, accs = [], []
     opt = torch.optim.Adam(model.parameters(), lr = 0.002)
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.L1Loss()
 
     for epoch in range(num_epochs):
         for i, (data, label) in enumerate(dataset):
