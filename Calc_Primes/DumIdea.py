@@ -43,7 +43,7 @@ class Dataset(Dataset):
 
 dataset = Dataset()
 
-batch_size = 10
+batch_size = 5
 data_loader = DataLoader(dataset, batch_size = batch_size, shuffle = True)
 
 class newlayer(nn.Module):
@@ -75,14 +75,13 @@ def eval(input, key):
 
 def fit(num_epochs):
     losses, accs = [], []
-    opt = torch.optim.Adam(model.parameters(), lr = 0.002)
+    opt = torch.optim.Adam(model.parameters(), lr = 0.00002)
     loss_fn = nn.L1Loss()
 
     for epoch in range(num_epochs):
-        for i in range(len(dataset)):
-            data, label = next(iter(data_loader))
-            data = data.reshape(10, 1)
-            label = label.reshape(10, 1)
+        for i, (data, label) in enumerate(dataset):
+            data = data.reshape(1, 1)
+            label = label.reshape(1, 1)
 
             output = model(data)
             loss = loss_fn(output, label)
