@@ -18,6 +18,7 @@ def extract_files():
                 primes.append(int(line))
             except:
                 pass
+        file.close()
 
     primes.sort()
     return primes
@@ -25,7 +26,7 @@ def extract_files():
 
 class Dataset(Dataset):
     def __init__(self, transforms = None):
-        primes = extract_files()
+        primes = extract_files()[:500000]
 
         self.dataset = torch.zeros(len(primes))
         self.transforms = transforms
@@ -94,5 +95,11 @@ def fit(num_epochs):
 
             if i % 100000 == 0:
                 print("Current loss = {}".format(sum(losses)/len(losses)))
+                losses = []
         print("Epoch [{}/{}], Loss = {}".format(epoch+1, num_epochs, sum(losses)/len(losses)))
 fit(2)
+
+while True:
+    Input = torch.tensor(int(input("Prime number:"))).reshape(1,1)
+    output = model(Input)
+    print(output)
