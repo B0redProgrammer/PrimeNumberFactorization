@@ -3,6 +3,8 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader, Dataset
 
+import random
+
 def extract_files():
     files = [open("1.txt", "r"),
              open("3.txt", "r"),
@@ -21,26 +23,28 @@ def extract_files():
         file.close()
 
     primes.sort()
+
+    for i, prime in enumerate(primes):
+        primes[i] = (i, prime)
+
     return primes
 
 
 class Dataset(Dataset):
     def __init__(self, transforms = None):
-        primes = extract_files()[:500000]
+        self.dataset = extract_files()[:1000000]
+        random.shuffle(self.dataset)
 
-        self.dataset = torch.zeros(len(primes))
+
         self.transforms = transforms
-
-        for i, prime_number in enumerate(primes):
-            self.dataset[i] = prime_number
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         if self.transforms != None:
-            return (torch.tensor(idx+1), transforms(self.dataset[idx]))
-        return (torch.tensor(int(idx+1)), self.dataset[idx])
+            return (self.transforms(torch.tensor(self.dataset[idx][0])), self.transforms(torch.tensor(self.dataset[idx][1])))
+        return (torch.tensor(self.dataset[idx][0]), torch.tensor(self.dataset[idx][1]))
 
 dataset = Dataset()
 
@@ -57,11 +61,15 @@ class newlayer(nn.Module):
 
 model = nn.Sequential(
         newlayer(),
-        nn.Linear(1, 10),
+        nn.Linear(1, 100),
         nn.LeakyReLU(),
 
         newlayer(),
-        nn.Linear(10, 10),
+        nn.Linear(100, 100),
+        nn.LeakyReLU(),
+
+        newlayer(),
+        nn.Linear(100, 10),
         nn.LeakyReLU(),
 
         newlayer(),
@@ -69,14 +77,9 @@ model = nn.Sequential(
         nn.LeakyReLU()
 )
 
-def eval(input, key):
-    for i, In in enumerate(input):
-        eval = []
-    return accs
-
 def fit(num_epochs):
     losses, accs = [], []
-    opt = torch.optim.Adam(model.parameters(), lr = 0.00002)
+    opt = torch.optim.Adam(model.parameters(), lr = 0.000002)
     loss_fn = nn.L1Loss()
 
     for epoch in range(num_epochs):
