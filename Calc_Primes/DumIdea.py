@@ -59,6 +59,13 @@ class newlayer(nn.Module):
         x = x.to(torch.float32)
         return x
 
+class roundinglayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return torch.tensor(round(x.item()), dtype = torch.float32, requires_grad=True)
+
 model = nn.Sequential(
         newlayer(),
         nn.Linear(1, 100),
@@ -74,7 +81,7 @@ model = nn.Sequential(
 
         newlayer(),
         nn.Linear(10, 1),
-        nn.LeakyReLU()
+        roundinglayer()
 )
 
 def fit(num_epochs):
